@@ -120,3 +120,36 @@
   new MutationObserver(apply).observe(document.documentElement, { childList: true, subtree: true });
   apply();
 })();
+
+/* v2 — link the exported app to the dedicated Neo workspace (/neo/). */
+(function () {
+  var src = (document.currentScript && document.currentScript.src) || "";
+  var base = src.replace(/\/neo-simple\.js.*$/, "");
+  var NEO = base + "/neo/";
+  var SPARK = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide h-4 w-4 flex-none text-secondary-foreground"><path d="M12 3l1.9 5.6 5.6 1.9-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/><path d="M19 3v4M17 5h4M5 17v4M3 19h4"/></svg>';
+  function apply() {
+    var sync = document.querySelector('a[data-guide-id="nav-configuration"]');
+    if (sync) {
+      var neo = document.getElementById("nav-neo");
+      if (!neo) {
+        neo = document.createElement("a");
+        neo.id = "nav-neo"; neo.setAttribute("data-label", "Neo"); neo.href = NEO; neo.title = "Neo";
+        sync.insertAdjacentElement("afterend", neo);
+      }
+      if (neo.className !== sync.className) {
+        neo.className = sync.className;
+        var collapsed = /w-8/.test(sync.className);
+        neo.innerHTML = SPARK + (collapsed ? "" : '<span class="flex-1 truncate">Neo</span><span class="inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-[14px] tracking-[0.08em] text-primary ring-1 ring-inset ring-primary/15">New</span>');
+        neo.setAttribute("aria-label", "Neo");
+      }
+    }
+    var pill = document.querySelector('header button[aria-label="Ask Neo"]');
+    if (pill && !pill.dataset.neoWs) { pill.dataset.neoWs = "1"; pill.setAttribute("aria-description", "Opens the Neo workspace. Ctrl J opens the side panel."); }
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest('header button[aria-label="Ask Neo"]');
+    if (b) { e.preventDefault(); e.stopPropagation(); location.href = NEO; }
+  }, true);
+  new MutationObserver(apply).observe(document.documentElement, { childList: true, subtree: true });
+  apply();
+})();
