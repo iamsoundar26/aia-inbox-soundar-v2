@@ -1,6 +1,7 @@
 # AI Accountant · Inbox (Soundar) — Neo workspace, version 2
 
 > **Status: ideation-stage concept, version 2.** Branched from `v1.0-locked` on 7 Oct 2026.
+> Live: https://iamsoundar26.github.io/aia-inbox-soundar-v2/neo/ · Repo: https://github.com/iamsoundar26/aia-inbox-soundar-v2 (branch `v2`)
 > v1 (the light-theme Neo side panel) is untouched and still reachable with Ctrl J / the floating side tab.
 
 ## What v2 adds
