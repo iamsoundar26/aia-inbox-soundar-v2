@@ -25,7 +25,7 @@
     thumbU: "M7 10v12M15 5.88L14 10h5.83a2 2 0 011.92 2.56l-2.33 8A2 2 0 0117.5 22H4a2 2 0 01-2-2v-8a2 2 0 012-2h2.76a2 2 0 001.79-1.11L12 2a3.13 3.13 0 013 3.88z", thumbD: "M17 14V2M9 18.12L10 14H4.17a2 2 0 01-1.92-2.56l2.33-8A2 2 0 016.5 2H20a2 2 0 012 2v8a2 2 0 01-2 2h-2.76a2 2 0 00-1.79 1.11L12 22a3.13 3.13 0 01-3-3.88z",
     user: "M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z", shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", eye: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 100-6 3 3 0 000 6z",
     menu: "M3 12h18M3 6h18M3 18h18", info: "M12 22a10 10 0 100-20 10 10 0 000 20zM12 16v-4M12 8h.01", zap: "M13 2L3 14h9l-1 8 10-12h-9l1-8z", trend: "M23 6l-9.5 9.5-5-5L1 18M17 6h6v6",
-    file: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6", link: "M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71", edit: "M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z", archive: "M21 8v13H3V8M1 3h22v5H1zM10 12h4", trash: "M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
+    file: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6", link: "M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71", edit: "M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z", archive: "M21 8v13H3V8M1 3h22v5H1zM10 12h4", expand: "M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7", clip: "M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2M9 2h6a1 1 0 011 1v2a1 1 0 01-1 1H9a1 1 0 01-1-1V3a1 1 0 011-1z", trash: "M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
   };
   function icon(n, cls) { return '<svg class="icon ' + (cls || "") + '" viewBox="0 0 24 24" aria-hidden="true"><path d="' + P[n] + '"/></svg>'; }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -167,6 +167,7 @@
     var isChat = p[0] === "chat";
     app.innerHTML = Shell(view, r, isChat);
     bind(r);
+    paintPanel();
     if (isChat) afterChat(p[1], r.q);
     document.title = "Neo · AI Accountant";
     var sc = app.querySelector(".main .scroll"); if (sc) sc.scrollTop = 0;
@@ -194,12 +195,12 @@
       '<div class="foot"><a href="#/settings" class="' + act("settings") + '">' + icon("settings", "sm") + "Settings</a></div></nav>";
     var modules = [["Dashboard", "grid", "../inbox/"], ["Inbox", "inbox", "../inbox/"], ["Purchases", "cart", "../inbox/"], ["Sales", "tag", "../inbox/"], ["Banking", "bank", "../inbox/"], ["Accounting", "layers", "../inbox/"], ["Inventory", "box", "../inbox/"], null, ["GST", "gst", "../inbox/"], ["Sync Management", "refresh", "../inbox/"]];
     var modnav = '<nav class="modnav" aria-label="Modules">' + modules.map(function (m) { return m ? '<a href="' + m[2] + '">' + icon(m[1]) + m[0] + "</a>" : "<hr>"; }).join("") + '<hr><a href="#/" class="active">' + icon("sparkle") + 'Neo<span class="tag">NEW</span></a></nav>';
-    return '<div class="app">' + TopNav() + '<div class="frame">' + modnav + (isChat ? "" : nav) + '<main class="main" id="main">' + (isChat ? view : '<div class="scroll">' + view + "</div>") + "</main></div></div>" + '<div id="overlay"></div>';
+    return '<div class="app">' + TopNav() + '<div class="frame">' + modnav + (isChat ? "" : nav) + '<main class="main" id="main">' + (isChat ? view : '<div class="scroll">' + view + "</div>") + "</main></div></div>" + '<button class="neo-tab" id="neoTab" title="Ask Neo (Ctrl J)"' + (PANEL.open ? " hidden" : "") + '><span class="mark">N</span><span class="lbl">Ask Neo</span></button><aside class="neo-panel' + (PANEL.open ? " open" : "") + '" id="neoPanel" aria-label="Neo" aria-hidden="' + !PANEL.open + '"></aside>' + '<div id="overlay"></div>';
   }
   function TopNav() {
     return '<header class="topnav"><div class="brand"><button class="menu-btn tn-link" id="menuBtn" aria-label="Open Neo navigation">' + icon("menu") + '</button><a href="../inbox/" aria-label="AI Accountant home"><img src="../images/logo.png" alt="AI Accountant" width="121" height="24"></a></div>' +
       '<div class="right"><button class="tn-btn hide-sm" aria-label="Switch company" title="' + COMPANY + '"><span class="co">S</span>' + COMPANY + icon("chevD", "sm") + '</button><button class="tn-btn hide-sm" aria-label="Sync to Tally">' + icon("refresh", "sm") + 'Sync<span class="dot"></span></button><span class="tn-sep hide-sm"></span>' +
-      '<a class="tn-link tn-neo" href="#/" aria-current="page"><span class="mark">' + icon("sparkle", "sm") + '</span>Ask Neo<kbd>Ctrl J</kbd></a>' +
+      '<button class="tn-link tn-neo" id="askNeo" aria-label="Ask Neo" aria-pressed="' + PANEL.open + '" title="Ask Neo (Ctrl J)"><span class="mark">' + icon("sparkle", "sm") + '</span>Ask Neo<kbd>Ctrl J</kbd></button>' +
       '<button class="tn-link hide-sm">' + icon("book") + 'Guide</button><button class="tn-avatar" aria-label="Profile menu" title="soundar.r@aiaccountant.com">SR</button></div></header>';
   }
 
@@ -297,9 +298,10 @@
     replay(c);
     if (location.hash !== "#/chat/" + c.id) location.hash = "#/chat/" + c.id;
   }
+  function repaint(c) { if (PANEL.open && PANEL.chat === c) paintPanel(); if (route().parts[1] === c.id) paint(c); }
   function replay(c) {
     var sc = SCRIPTS[c.script] || SCRIPTS.fallback, i = 0;
-    var typing = { role: "neo", typing: true }; c.messages.push(typing); paint(c);
+    var typing = { role: "neo", typing: true }; c.messages.push(typing); repaint(c);
     function step() {
       var s = sc.steps[i++]; if (!s) return;
       setTimeout(function () {
@@ -307,7 +309,7 @@
         c.messages.push({ role: "neo", text: s.say, result: s.result });
         if (s.result) c.work = s.result;
         if (sc.steps[i]) { c.messages.push(typing); }
-        paint(c); step();
+        repaint(c); step();
       }, s.wait || 700);
     }
     step();
@@ -416,7 +418,7 @@
     return '<div class="page"><div class="page-head"><div><h1>Neo settings</h1><p class="sub">How Neo works for ' + USER + " at " + esc(COMPANY) + '.</p></div></div><div class="card pad" style="display:flex;flex-direction:column;gap:14px">' +
       '<label class="toggle" style="justify-content:space-between"><span>Show “why” explanations with every suggestion</span><input type="checkbox" id="setExplain"' + (S.explain ? " checked" : "") + '><span class="track"></span></label>' +
       '<label class="toggle" style="justify-content:space-between"><span>Ask before any bulk action, even at high confidence</span><input type="checkbox" checked disabled><span class="track"></span></label>' +
-      '<label class="toggle" style="justify-content:space-between"><span>Keyboard shortcut Ctrl J opens Neo</span><input type="checkbox" checked><span class="track"></span></label>' +
+      '<label class="toggle" style="justify-content:space-between"><span>Keyboard shortcut Ctrl J opens the Neo side panel</span><input type="checkbox" checked><span class="track"></span></label>' +
       '<div class="note">' + icon("shield", "sm") + "<span>Approval for posting, deleting and GSTIN changes cannot be switched off.</span></div></div></div>";
   }
 
@@ -447,6 +449,37 @@
     };
   }
 
+
+  /* ---------- Persistent side panel (v1 Neo chat, kept in v2) ---------- */
+  var PANEL = { open: false, chat: null, files: [] };
+  var PTASKS = [["Work the Inbox with me", "Read, check and prepare every new bill", "inbox", "Review all invoices uploaded today."], ["What needs my attention?", "Waiting, blocked and duplicate documents", "alert", "What needs my attention?"], ["Find duplicates", "Certain matches, with Delete or Keep", "copy", "Find duplicate bills."]];
+  function openPanel(o) { PANEL.open = o; var p = document.getElementById("neoPanel"), t = document.getElementById("neoTab"), b = document.getElementById("askNeo"); if (!p) return; p.classList.toggle("open", o); p.setAttribute("aria-hidden", String(!o)); if (t) t.hidden = o; if (b) b.setAttribute("aria-pressed", String(o)); paintPanel(); if (o) { var ta = p.querySelector("textarea"); if (ta) ta.focus(); } }
+  function paintPanel() {
+    var p = document.getElementById("neoPanel"); if (!p) return;
+    var c = PANEL.chat, title = c ? c.title : "Neo";
+    var thread = c ? c.messages.map(Msg).join("") : '<div class="welcome"><div class="orb">' + icon("sparkle", "lg") + "</div><h3>" + greet() + ", " + USER + ".</h3><p>" + openExc().length + " items are waiting for you. Pick a task below or ask me anything.</p></div>" + '<div class="tasks">' + PTASKS.map(function (t) { return '<button class="task" data-pask="' + esc(t[3]) + '"><span class="ti">' + icon(t[2]) + "</span><span><b>" + t[0] + "</b><span>" + t[1] + "</span></span></button>"; }).join("") + "</div>";
+    var oldTa = p.querySelector("textarea"), keep = oldTa ? oldTa.value : "";
+    p.innerHTML = "<header><span class=\"nmark\">" + icon("sparkle", "sm") + "</span><h2>" + esc(title) + '</h2><span class="beta">Beta</span>' + (c ? '<a class="ib" href="#/chat/' + c.id + '" title="Open in full-screen workspace" aria-label="Open in workspace" data-pexpand>' + icon("expand", "sm") + "</a>" : "") + '<button class="ib" data-pnew title="New chat" aria-label="New chat">' + icon("plus", "sm") + '</button><button class="ib" data-pclose title="Close Neo" aria-label="Close Neo">' + icon("x", "sm") + "</button></header>" +
+      '<div class="pthread" id="pthread"><p class="disclaimer">Neo prepares the work and shows you exactly what will post. Nothing is approved or sent until you say so.</p>' + thread + "</div>" +
+      '<div class="pfoot"><form class="pcomposer" id="pcomposer"><div class="attach-chips" id="pchips" style="display:none"></div><label class="sr-only" for="pprompt">Ask Neo</label><textarea id="pprompt" rows="1" placeholder="Ask Neo anything">' + esc(keep) + '</textarea><div class="tools"><input type="file" id="pfile" multiple accept=".pdf,.jpg,.jpeg,.png" hidden><button type="button" class="tb" data-pattach title="Attach invoices or bills" aria-label="Attach files">' + icon("paperclip", "sm") + '</button><button type="button" class="tb" data-ppaste title="Paste from clipboard" aria-label="Paste from clipboard">' + icon("clip", "sm") + '</button><button type="submit" class="psend" id="psend" aria-label="Send" disabled>' + icon("send", "sm") + '</button></div></form><p class="pnote">Neo can make mistakes. Review extracted details before approving.</p></div>';
+    var th = document.getElementById("pthread"); th.scrollTop = th.scrollHeight;
+    var ta = document.getElementById("pprompt"), send = document.getElementById("psend"), chips = document.getElementById("pchips"), fi = document.getElementById("pfile");
+    function sync() { send.disabled = !ta.value.trim() && !PANEL.files.length; ta.style.height = "auto"; ta.style.height = Math.min(140, ta.scrollHeight) + "px"; }
+    function renderChips() { chips.innerHTML = PANEL.files.map(function (f, i) { return '<span class="attach-chip"><b>' + esc(f.name) + "</b><small>" + (f.size < 1048576 ? Math.max(1, Math.round(f.size / 1024)) + " KB" : (f.size / 1048576).toFixed(1) + " MB") + '</small><button type="button" data-prm="' + i + '" aria-label="Remove ' + esc(f.name) + '">' + icon("x", "sm") + "</button></span>"; }).join(""); chips.style.display = PANEL.files.length ? "flex" : "none"; if (PANEL.files.length && !ta.value) ta.value = "Process " + (PANEL.files.length === 1 ? "this file" : "these " + PANEL.files.length + " files") + ": " + PANEL.files.map(function (f) { return f.name; }).join(", "); sync(); }
+    ta.addEventListener("input", sync); sync(); if (PANEL.files.length) renderChips();
+    ta.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("pcomposer").requestSubmit(); } });
+    document.getElementById("pcomposer").onsubmit = function (e) { e.preventDefault(); var q = ta.value.trim(); if (!q) return; PANEL.files = []; panelAsk(q); };
+    p.querySelector("[data-pattach]").onclick = function () { fi.value = ""; fi.click(); };
+    fi.onchange = function () { Array.prototype.forEach.call(fi.files, function (f) { PANEL.files.push({ name: f.name, size: f.size }); }); renderChips(); };
+    chips.onclick = function (e) { var b = e.target.closest("[data-prm]"); if (b) { PANEL.files.splice(+b.dataset.prm, 1); ta.value = ""; renderChips(); } };
+    p.querySelector("[data-ppaste]").onclick = function () { if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(function (t) { if (t) { ta.value = (ta.value ? ta.value + " " : "") + t.trim(); sync(); } ta.focus(); }).catch(function () { ta.focus(); }); else ta.focus(); };
+  }
+  function panelAsk(q) {
+    var c = PANEL.chat;
+    if (!c) { var t = titleFor(q); c = { id: "c" + Date.now(), em: t[0], title: t[1], when: "Today", script: pickScript(q), messages: [], work: null }; S.chats.unshift(c); PANEL.chat = c; }
+    c.messages.push({ role: "user", text: q }); if (c.messages.length > 2) c.script = pickScript(q);
+    replay(c);
+  }
   /* ---------- Events ---------- */
   function bind(r) {
     var mb = document.getElementById("menuBtn"); if (mb) mb.onclick = function () { var n = document.getElementById("neonav"); if (n) n.classList.toggle("open"); };
@@ -480,13 +513,19 @@
   }
   document.addEventListener("click", function (e) {
     var t = e.target;
+    if (t.closest("#askNeo")) { openPanel(!PANEL.open); return; }
+    if (t.closest("#neoTab")) { openPanel(true); return; }
+    if (t.closest("[data-pclose]")) { openPanel(false); return; }
+    if (t.closest("[data-pnew]")) { PANEL.chat = null; PANEL.files = []; paintPanel(); return; }
+    if (t.closest("[data-pexpand]")) { openPanel(false); return; }
+    var pa = t.closest("[data-pask]"); if (pa) { panelAsk(pa.dataset.pask); return; }
     var g = t.closest("[data-go]"); if (g) { go(g.dataset.go); return; }
     var a = t.closest("[data-ask]"); if (a) { ask(a.dataset.ask, "new"); return; }
     var ru = t.closest("[data-run]"); if (ru) { runAgent(ru.dataset.run); return; }
     var ts = t.closest("[data-toast]"); if (ts) { toast(ts.dataset.toast); return; }
     var w = t.closest("[data-why]"); if (w) { var ul = document.getElementById("why-" + w.dataset.why); if (ul) { ul.hidden = !ul.hidden; w.setAttribute("aria-expanded", String(!ul.hidden)); } return; }
     var wx = t.closest("[data-whyex]"); if (wx) { var pop = document.getElementById("pop-" + wx.dataset.whyex); var was = pop.hidden; closeMenus(); pop.hidden = !was; wx.setAttribute("aria-expanded", String(was)); return; }
-    var act = t.closest("[data-act]"); if (act) { var v = act.dataset.act; if (v === "approve") approveModal(27, "₹18,42,650", 5); else if (v === "approve130") { toast("130 matches confirmed and posted to Banking."); } else if (v.indexOf("toast:") === 0) toast(v.slice(6)); else if (v === "focus") { var p = document.getElementById("prompt"); if (p) p.focus(); } else if (v.indexOf("#") === 0) go(v); else location.href = v; return; }
+    var act = t.closest("[data-act]"); if (act) { var v = act.dataset.act; if (v === "approve") approveModal(27, "₹18,42,650", 5); else if (v === "approve130") { toast("130 matches confirmed and posted to Banking."); } else if (v.indexOf("toast:") === 0) toast(v.slice(6)); else if (v === "focus") { var p = document.getElementById("prompt"); if (p) p.focus(); } else if (v.indexOf("#") === 0) { if (act.closest("#neoPanel")) openPanel(false); go(v); } else location.href = v; return; }
     var ap = t.closest("[data-apply]"); if (ap) { var ex = S.exc.filter(function (x) { return x.id === ap.dataset.apply; })[0]; S.resolved[ex.id] = true; toast(ex.suggest + " applied to " + ex.vendor + "."); render(); return; }
     var sk = t.closest("[data-skip]"); if (sk) { S.resolved[sk.dataset.skip] = true; toast("Skipped. You can find it later under Completed."); render(); return; }
     var aa = t.closest("[data-applyall]"); if (aa) { var n = 0; S.exc.forEach(function (x) { if (x.kind === "costcentre" && !S.resolved[x.id]) { S.resolved[x.id] = true; n++; } }); toast("Cost centre applied to " + n + " invoices. Pulse Media was set to Marketing as suggested."); render(); return; }
@@ -501,7 +540,8 @@
   });
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") { closeModal(); closeMenus(); }
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j") { e.preventDefault(); go("#/"); var p = document.getElementById("prompt"); if (p) p.focus(); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j") { e.preventDefault(); openPanel(!PANEL.open); }
+    if (e.key === "Escape" && PANEL.open && !document.getElementById("modalBg")) openPanel(false);
     var op = e.target.closest && e.target.closest("[data-open]"); if (op && e.key === "Enter") go("#/chat/" + op.dataset.open);
   });
   window.addEventListener("hashchange", render);

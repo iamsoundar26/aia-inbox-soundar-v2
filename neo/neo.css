@@ -440,3 +440,47 @@ section.suggest .grid { display: grid; grid-template-columns: repeat(6, 1fr); ga
   .work.sheet { display: block; position: fixed; left: 0; right: 0; bottom: 0; max-height: 70vh; border-left: 0; border-top: 1px solid var(--line); border-radius: 14px 14px 0 0; box-shadow: var(--shadow-lg); z-index: 45; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---------- Persistent Neo side panel + floating tab (v1 behaviour, kept in v2) ---------- */
+.neo-tab { position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 46; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 6px; border-radius: 12px 0 0 12px; background: var(--bg); border: 1px solid var(--line-2); border-right: 0; box-shadow: -4px 0 16px rgba(16,24,40,.08); color: var(--ink); }
+.neo-tab:hover { background: var(--bg-muted); }
+.neo-tab .mark { width: 24px; height: 24px; border-radius: 8px; background: var(--primary); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.neo-tab .lbl { writing-mode: vertical-rl; font-size: 11px; font-weight: 600; }
+.neo-tab[hidden] { display: none; }
+.neo-panel { position: fixed; top: 50px; right: 0; bottom: 0; width: 420px; max-width: 100vw; z-index: 47; background: var(--bg); border-left: 1px solid var(--line); box-shadow: -12px 0 32px rgba(16,24,40,.08); display: flex; flex-direction: column; transform: translateX(100%); transition: transform .2s ease; }
+.neo-panel.open { transform: none; }
+.neo-panel > header { height: 56px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 14px; border-bottom: 1px solid var(--line); }
+.neo-panel > header .nmark { width: 26px; height: 26px; border-radius: 8px; background: var(--primary); color: #fff; display: grid; place-items: center; flex: none; }
+.neo-panel > header h2 { font-size: 14px; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.neo-panel > header .beta { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; border-radius: 5px; background: var(--primary-100); color: var(--primary); }
+.neo-panel > header .ib { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; color: var(--ink-2); }
+.neo-panel > header .ib:hover { background: var(--bg-muted-2); color: var(--ink); }
+.neo-panel .pthread { flex: 1; overflow-y: auto; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 14px; }
+.neo-panel .pthread .disclaimer { text-align: center; font-size: 11.5px; line-height: 16px; color: var(--ink-3); }
+.neo-panel .welcome { text-align: center; padding: 28px 8px 6px; }
+.neo-panel .welcome .orb { width: 52px; height: 52px; margin: 0 auto 16px; border-radius: 16px; background: linear-gradient(145deg, var(--primary-400), var(--primary)); color: #fff; display: grid; place-items: center; box-shadow: 0 6px 16px rgba(49,70,176,.25); }
+.neo-panel .welcome h3 { font-size: 20px; line-height: 26px; font-weight: 600; }
+.neo-panel .welcome p { color: var(--ink-2); max-width: 32ch; margin: 8px auto 0; font-size: 13px; }
+.neo-panel .tasks { display: flex; flex-direction: column; gap: 8px; }
+.neo-panel .task { display: flex; align-items: center; gap: 14px; width: 100%; padding: 13px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); text-align: left; transition: border-color .15s, background .15s; }
+.neo-panel .task:hover { background: var(--bg-muted); border-color: var(--primary-200); }
+.neo-panel .task .ti { width: 34px; height: 34px; border-radius: 10px; background: var(--primary-50); border: 1px solid var(--primary-100); color: var(--primary); display: grid; place-items: center; flex: none; }
+.neo-panel .task b { display: block; font-size: 13.5px; font-weight: 600; }
+.neo-panel .task span { display: block; font-size: 12px; color: var(--ink-2); margin-top: 1px; }
+.neo-panel .msg.user { max-width: 84%; }
+.neo-panel .msg.neo { max-width: 100%; }
+.neo-panel .tally { grid-template-columns: 1fr; }
+.neo-panel .pfoot { flex: none; padding: 10px 14px 8px; border-top: 1px solid var(--line); background: var(--bg); }
+.neo-panel .pcomposer { border: 1px solid var(--line-2); border-radius: 14px; background: var(--bg); box-shadow: var(--shadow-sm); }
+.neo-panel .pcomposer:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(49,70,176,.12); }
+.neo-panel .pcomposer textarea { display: block; width: 100%; border: 0; outline: none; resize: none; background: transparent; padding: 12px 14px 6px; min-height: 44px; max-height: 140px; font-size: 14px; line-height: 20px; }
+.neo-panel .pcomposer .tools { display: flex; align-items: center; gap: 4px; padding: 0 8px 8px 10px; }
+.neo-panel .pcomposer .tools .tb { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--ink-2); }
+.neo-panel .pcomposer .tools .tb:hover { background: var(--bg-muted-2); color: var(--ink); }
+.neo-panel .pcomposer .tools .psend { margin-left: auto; width: 30px; height: 30px; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; }
+.neo-panel .pcomposer .tools .psend[disabled] { background: #c4c8d6; cursor: not-allowed; }
+.neo-panel .pcomposer .attach-chips { padding: 8px 12px 0; }
+.neo-panel .pnote { text-align: center; font-size: 11px; line-height: 14px; color: var(--ink-3); margin-top: 8px; }
+.neo-panel .expand-link { font-size: 12.5px; font-weight: 600; color: var(--primary); display: inline-flex; align-items: center; gap: 4px; }
+.neo-panel .expand-link:hover { text-decoration: underline; }
+@media (max-width: 640px) { .neo-panel { width: 100vw; } }

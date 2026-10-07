@@ -121,7 +121,7 @@
   apply();
 })();
 
-/* v2 — link the exported app to the dedicated Neo workspace (/neo/). */
+/* v2 — add a "Neo" module-nav item that opens the full-screen workspace (/neo/). The Ask Neo pill, floating tab and side panel keep their v1 behaviour. */
 (function () {
   var src = (document.currentScript && document.currentScript.src) || "";
   var base = src.replace(/\/neo-simple\.js.*$/, "");
@@ -143,13 +143,7 @@
         neo.setAttribute("aria-label", "Neo");
       }
     }
-    var pill = document.querySelector('header button[aria-label="Ask Neo"]');
-    if (pill && !pill.dataset.neoWs) { pill.dataset.neoWs = "1"; pill.setAttribute("aria-description", "Opens the Neo workspace. Ctrl J opens the side panel."); }
   }
-  document.addEventListener("click", function (e) {
-    var b = e.target.closest && e.target.closest('header button[aria-label="Ask Neo"]');
-    if (b) { e.preventDefault(); e.stopPropagation(); location.href = NEO; }
-  }, true);
   new MutationObserver(apply).observe(document.documentElement, { childList: true, subtree: true });
   apply();
 })();
