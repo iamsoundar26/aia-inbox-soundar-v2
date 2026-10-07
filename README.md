@@ -18,7 +18,7 @@ A dedicated **Neo workspace** at `/neo/` — an AI accounting workspace rather t
 | Knowledge | `neo/#/knowledge` | Company, Accounting, Data and Historical context with connection status |
 | Settings | `neo/#/settings` | Explanation and approval preferences |
 
-Entry points: the **Neo · NEW** item in the module navigation opens the full-screen workspace. The top-nav **Ask Neo** pill, the floating right-edge tab and Ctrl J open the v1 **side panel** everywhere, including inside the workspace (where the panel has an expand button to continue the conversation full-screen).
+Entry points: outside the workspace (Inbox, documents, other modules) the top-nav **Ask Neo** pill, the floating right-edge tab and Ctrl J open the v1 **side panel**, exactly as in v1. The **Neo · NEW** item in the module navigation opens the full-screen workspace. Inside the workspace there is no floating widget; the Ask Neo pill and Ctrl J focus the composer.
 
 ## Files added or changed in v2
 

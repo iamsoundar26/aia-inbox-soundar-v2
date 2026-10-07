@@ -167,7 +167,6 @@
     var isChat = p[0] === "chat";
     app.innerHTML = Shell(view, r, isChat);
     bind(r);
-    paintPanel();
     if (isChat) afterChat(p[1], r.q);
     document.title = "Neo · AI Accountant";
     var sc = app.querySelector(".main .scroll"); if (sc) sc.scrollTop = 0;
@@ -195,12 +194,12 @@
       '<div class="foot"><a href="#/settings" class="' + act("settings") + '">' + icon("settings", "sm") + "Settings</a></div></nav>";
     var modules = [["Dashboard", "grid", "../inbox/"], ["Inbox", "inbox", "../inbox/"], ["Purchases", "cart", "../inbox/"], ["Sales", "tag", "../inbox/"], ["Banking", "bank", "../inbox/"], ["Accounting", "layers", "../inbox/"], ["Inventory", "box", "../inbox/"], null, ["GST", "gst", "../inbox/"], ["Sync Management", "refresh", "../inbox/"]];
     var modnav = '<nav class="modnav" aria-label="Modules">' + modules.map(function (m) { return m ? '<a href="' + m[2] + '">' + icon(m[1]) + m[0] + "</a>" : "<hr>"; }).join("") + '<hr><a href="#/" class="active">' + icon("sparkle") + 'Neo<span class="tag">NEW</span></a></nav>';
-    return '<div class="app">' + TopNav() + '<div class="frame">' + modnav + (isChat ? "" : nav) + '<main class="main" id="main">' + (isChat ? view : '<div class="scroll">' + view + "</div>") + "</main></div></div>" + '<button class="neo-tab" id="neoTab" title="Ask Neo (Ctrl J)"' + (PANEL.open ? " hidden" : "") + '><span class="mark">N</span><span class="lbl">Ask Neo</span></button><aside class="neo-panel' + (PANEL.open ? " open" : "") + '" id="neoPanel" aria-label="Neo" aria-hidden="' + !PANEL.open + '"></aside>' + '<div id="overlay"></div>';
+    return '<div class="app">' + TopNav() + '<div class="frame">' + modnav + (isChat ? "" : nav) + '<main class="main" id="main">' + (isChat ? view : '<div class="scroll">' + view + "</div>") + "</main></div></div>" + '<div id="overlay"></div>';
   }
   function TopNav() {
     return '<header class="topnav"><div class="brand"><button class="menu-btn tn-link" id="menuBtn" aria-label="Open Neo navigation">' + icon("menu") + '</button><a href="../inbox/" aria-label="AI Accountant home"><img src="../images/logo.png" alt="AI Accountant" width="121" height="24"></a></div>' +
       '<div class="right"><button class="tn-btn hide-sm" aria-label="Switch company" title="' + COMPANY + '"><span class="co">S</span>' + COMPANY + icon("chevD", "sm") + '</button><button class="tn-btn hide-sm" aria-label="Sync to Tally">' + icon("refresh", "sm") + 'Sync<span class="dot"></span></button><span class="tn-sep hide-sm"></span>' +
-      '<button class="tn-link tn-neo" id="askNeo" aria-label="Ask Neo" aria-pressed="' + PANEL.open + '" title="Ask Neo (Ctrl J)"><span class="mark">' + icon("sparkle", "sm") + '</span>Ask Neo<kbd>Ctrl J</kbd></button>' +
+      '<button class="tn-link tn-neo" id="askNeo" aria-label="Ask Neo" aria-current="page" title="You are in Neo. Ctrl J focuses the composer."><span class="mark">' + icon("sparkle", "sm") + '</span>Ask Neo<kbd>Ctrl J</kbd></button>' +
       '<button class="tn-link hide-sm">' + icon("book") + 'Guide</button><button class="tn-avatar" aria-label="Profile menu" title="soundar.r@aiaccountant.com">SR</button></div></header>';
   }
 
@@ -418,7 +417,7 @@
     return '<div class="page"><div class="page-head"><div><h1>Neo settings</h1><p class="sub">How Neo works for ' + USER + " at " + esc(COMPANY) + '.</p></div></div><div class="card pad" style="display:flex;flex-direction:column;gap:14px">' +
       '<label class="toggle" style="justify-content:space-between"><span>Show “why” explanations with every suggestion</span><input type="checkbox" id="setExplain"' + (S.explain ? " checked" : "") + '><span class="track"></span></label>' +
       '<label class="toggle" style="justify-content:space-between"><span>Ask before any bulk action, even at high confidence</span><input type="checkbox" checked disabled><span class="track"></span></label>' +
-      '<label class="toggle" style="justify-content:space-between"><span>Keyboard shortcut Ctrl J opens the Neo side panel</span><input type="checkbox" checked><span class="track"></span></label>' +
+      '<label class="toggle" style="justify-content:space-between"><span>Keyboard shortcut Ctrl J opens Neo (side panel in the app, composer here)</span><input type="checkbox" checked><span class="track"></span></label>' +
       '<div class="note">' + icon("shield", "sm") + "<span>Approval for posting, deleting and GSTIN changes cannot be switched off.</span></div></div></div>";
   }
 
@@ -450,7 +449,8 @@
   }
 
 
-  /* ---------- Persistent side panel (v1 Neo chat, kept in v2) ---------- */
+  function focusComposer() { var p = document.getElementById("prompt"); if (p) { p.focus(); p.scrollIntoView({ block: "center" }); } else go("#/"); }
+  /* ---------- Side panel module (not rendered inside the workspace; the v1 panel lives on the app pages) ---------- */
   var PANEL = { open: false, chat: null, files: [] };
   var PTASKS = [["Work the Inbox with me", "Read, check and prepare every new bill", "inbox", "Review all invoices uploaded today."], ["What needs my attention?", "Waiting, blocked and duplicate documents", "alert", "What needs my attention?"], ["Find duplicates", "Certain matches, with Delete or Keep", "copy", "Find duplicate bills."]];
   function openPanel(o) { PANEL.open = o; var p = document.getElementById("neoPanel"), t = document.getElementById("neoTab"), b = document.getElementById("askNeo"); if (!p) return; p.classList.toggle("open", o); p.setAttribute("aria-hidden", String(!o)); if (t) t.hidden = o; if (b) b.setAttribute("aria-pressed", String(o)); paintPanel(); if (o) { var ta = p.querySelector("textarea"); if (ta) ta.focus(); } }
@@ -513,8 +513,7 @@
   }
   document.addEventListener("click", function (e) {
     var t = e.target;
-    if (t.closest("#askNeo")) { openPanel(!PANEL.open); return; }
-    if (t.closest("#neoTab")) { openPanel(true); return; }
+    if (t.closest("#askNeo")) { focusComposer(); return; }
     if (t.closest("[data-pclose]")) { openPanel(false); return; }
     if (t.closest("[data-pnew]")) { PANEL.chat = null; PANEL.files = []; paintPanel(); return; }
     if (t.closest("[data-pexpand]")) { openPanel(false); return; }
@@ -540,8 +539,7 @@
   });
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") { closeModal(); closeMenus(); }
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j") { e.preventDefault(); openPanel(!PANEL.open); }
-    if (e.key === "Escape" && PANEL.open && !document.getElementById("modalBg")) openPanel(false);
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j") { e.preventDefault(); focusComposer(); }
     var op = e.target.closest && e.target.closest("[data-open]"); if (op && e.key === "Enter") go("#/chat/" + op.dataset.open);
   });
   window.addEventListener("hashchange", render);
