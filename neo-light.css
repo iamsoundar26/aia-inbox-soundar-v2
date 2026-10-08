@@ -278,3 +278,40 @@ header button[aria-label="Ask Neo"][title="Ask Neo (Ctrl J)"]::after {
   content: "Ctrl J"; display: inline-block; height: 20px; padding: 0 6px; border-radius: 6px;
   background: rgba(255,255,255,.22); font-size: 11px; line-height: 20px; font-weight: 700; letter-spacing: .2px;
 }
+
+/* ---------- v2: top nav + module nav aligned to the Neo workspace page (audit 8 Oct 2026) ---------- */
+/* Top nav: 13px controls, 32px tall, flush vertical centring */
+header.sticky.h-\[50px\] { padding-top: 0; padding-bottom: 0; }
+header.sticky a[aria-label="AI Accountant home"] { padding: 0; }
+header.sticky button[aria-label="Switch company"],
+header.sticky button[aria-label="Sync to Tally"],
+header.sticky button[aria-label="Guide"] { font-size: 13px; }
+header.sticky button[aria-label="Switch company"] { padding: 0 10px; }
+header.sticky button[aria-label="Sync to Tally"] > span.absolute { position: static; width: 8px; height: 8px; margin-left: 0; box-shadow: none; }
+header.sticky button[aria-label="Ask Neo"][title="Ask Neo (Ctrl J)"] {
+  height: 32px; border-radius: 8px; font-size: 13px; font-weight: 600; box-shadow: none;
+  padding: 0 6px 0 4px; color: #efefef; border: 1px solid #465ed5;
+}
+header.sticky button[aria-label="Ask Neo"][title="Ask Neo (Ctrl J)"]:hover { background: #344593; }
+header.sticky button[aria-label="Ask Neo"][title="Ask Neo (Ctrl J)"] > span.bg-primary {
+  width: 24px; height: 24px; border-radius: 6px;
+  background: #465ed5 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3l1.9 5.6 5.6 1.9-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9zM19 3v4M17 5h4M5 17v4M3 19h4'/></svg>") center / 14px no-repeat;
+}
+header.sticky button[aria-label="Ask Neo"][title="Ask Neo (Ctrl J)"]::after {
+  height: auto; line-height: 1; font-size: 11px; font-weight: 600; letter-spacing: 0; padding: 4px 6px; border-radius: 5px; background: rgba(255,255,255,.18);
+}
+header.sticky button[aria-label="Profile menu"] { font-size: 13px; font-weight: 600; color: #ffe09e; }
+
+/* Module nav: 2px rhythm, 10px padding, radius 8, dark labels, blue bold active state */
+#prototype-main-navigation { gap: 2px; }
+#prototype-main-navigation > a { padding: 0 10px; border-radius: 8px; gap: 10px; color: #222; }
+#prototype-main-navigation > a svg { color: #222; }
+#prototype-main-navigation > a:hover { background: #f3f4f8; }
+#prototype-main-navigation > a[aria-current="page"] { background: #f6f7ff; color: hsl(var(--primary)); font-weight: 600; }
+#prototype-main-navigation > a[aria-current="page"] svg { color: hsl(var(--primary)); }
+#prototype-main-navigation > a > span.inline-flex.rounded-md { /* NEW badge */
+  background: #e2e5fb; color: hsl(var(--primary)); box-shadow: none; border-radius: 4px;
+  font-size: 10px; letter-spacing: .04em; padding: 2px 6px; line-height: 14px;
+}
+#prototype-main-navigation > a > span.inline-flex.rounded-md > svg { display: none; }
+#prototype-main-navigation > div.h-px { margin: 8px 0; }

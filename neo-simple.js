@@ -134,7 +134,7 @@
       if (!neo) {
         neo = document.createElement("a");
         neo.id = "nav-neo"; neo.setAttribute("data-label", "Neo"); neo.href = NEO; neo.title = "Neo";
-        sync.insertAdjacentElement("afterend", neo);
+        var hr = sync.parentElement.querySelector("div.h-px"); if (hr) { hr = hr.cloneNode(true); hr.id = "nav-neo-hr"; sync.insertAdjacentElement("afterend", hr); hr.insertAdjacentElement("afterend", neo); } else sync.insertAdjacentElement("afterend", neo);
       }
       if (neo.className !== sync.className) {
         neo.className = sync.className;
