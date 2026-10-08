@@ -20,22 +20,10 @@ A dedicated **Neo workspace** at `/neo/` — an AI accounting workspace rather t
 
 Entry points: outside the workspace (Inbox, documents, other modules) the top-nav **Ask Neo** pill, the floating right-edge tab and Ctrl J open the v1 **side panel**, exactly as in v1. The **Neo · NEW** item in the module navigation opens the full-screen workspace. Inside the workspace there is no floating widget; the Ask Neo pill and Ctrl J focus the composer.
 
-## Chat design (8 Oct 2026)
-
-The chat itself follows the compact "Ask Neo" prototype: one module, `neo-chat.js` + `neo-chat.css`, rendered as a
-**side panel** on app pages (replacing the v1 React panel behind the same Ask Neo pill, floating tab and Ctrl J) and as
-the **full view** at `neo/#/chat` (history docked left, conversation centre, review panel docked right). Neo acknowledges
-("Thinking"), shows named check steps with ticks that fold into "Checked N sources", streams the answer with bold figures,
-then lists result rows. Selecting a bill row opens the review panel with extracted fields, Neo's checks, Approve / Skip
-(or Delete duplicate / Keep) and Undo. Follow-up chips, a stop button, searchable history grouped by day, and a 14/13/12
-type scale with 32px controls. Chats and decisions are kept in sessionStorage so the panel and the full view continue the
-same thread; the expand button in the panel opens the current chat full-screen and the collapse button returns to the app.
-
 ## Files added or changed in v2
 
 - `neo/index.html`, `neo/neo.css`, `neo/neo.js` — the workspace. Plain HTML/CSS/JS, hash router, no build step. Sample data and scripted Neo responses live at the top of `neo.js`.
-- `neo-chat.js`, `neo-chat.css` — the shared chat module (side panel on app pages, full view in the workspace).
-- `neo-simple.js` — appended block that injects the module-nav link.
+- `neo-simple.js` — appended block that injects the module-nav link. The v1 pill, tab and panel behaviour is unchanged.
 - All pages: asset version bumped to `?v=5`.
 
 The workspace uses relative paths (`../_next/…`, `../images/logo.png`, `../inbox/`) so it works under any base path without running `set-base-path.py`.

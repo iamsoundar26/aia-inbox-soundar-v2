@@ -180,7 +180,8 @@
     var nav = '<nav class="neonav" id="neonav" aria-label="Neo">' +
       '<div class="head">' + icon("sparkle", "lg") + "<h1>NEO</h1></div>" +
       '<button class="new" data-go="#/chat/new">' + icon("plus") + "New chat</button>" +
-      RecentGroup(r) +
+      '<div class="group"><h2>Recent chats <button data-go="#/chat/new" aria-label="New chat" title="New chat">' + icon("plus", "sm") + "</button></h2><ul>" +
+      S.chats.slice(0, 6).map(function (c) { return '<li><a href="#/chat/' + c.id + '" class="' + (r.parts[1] === c.id ? "active" : "") + '"><span class="em">' + c.em + '</span><span class="txt">' + esc(c.title) + "</span></a></li>"; }).join("") + "</ul></div>" +
       '<div class="group"><h2>Agents <button data-go="#/agents/new" aria-label="Create agent" title="Create agent">' + icon("plus", "sm") + "</button></h2><ul>" +
       S.agents.map(function (a) { return '<li><a href="#/agents/' + a.id + '" class="' + (r.parts[1] === a.id ? "active" : "") + '">' + icon(a.icon, "sm") + '<span class="txt">' + esc(a.name) + "</span>" + (a.status === "running" ? '<span class="count run">running</span>' : "") + "</a></li>"; }).join("") +
       '<li><a href="#/agents" class="' + (p === "agents" && !r.parts[1] ? "active" : "") + '">' + icon("user", "sm") + '<span class="txt">My agents</span></a></li>' +
@@ -194,10 +195,6 @@
     var modules = [["Dashboard", "grid", "../inbox/"], ["Inbox", "inbox", "../inbox/", '<span class="tag">NEW</span>'], ["Purchases", "cart", "../inbox/"], ["Sales", "tag", "../inbox/"], ["Banking", "bank", "../inbox/"], ["Accounting", "layers", "../inbox/", '<span class="chev">' + icon("chevR") + "</span>"], ["Inventory", "box", "../inbox/"], null, ["GST", "gst", "../inbox/"], ["Sync Management", "refresh", "../inbox/"]];
     var modnav = '<nav class="modnav" aria-label="Modules"><div class="items">' + modules.map(function (m) { return m ? '<a href="' + m[2] + '" data-label="' + m[0] + '">' + icon(m[1]) + "<span>" + m[0] + "</span>" + (m[3] || "") + "</a>" : "<hr>"; }).join("") + '<hr><a href="#/" class="active" aria-current="page" data-label="Neo">' + icon("sparkle") + '<span>Neo</span><span class="tag">NEW</span></a></div><button class="collapse" id="modCollapse" title="Collapse sidebar" aria-label="Collapse sidebar">' + icon("collapse") + "</button></nav>";
     return '<div class="app">' + TopNav() + '<div class="frame">' + modnav + (isChat ? "" : nav) + '<main class="main" id="main">' + (isChat ? view : '<div class="scroll">' + view + "</div>") + "</main></div></div>" + '<div id="overlay"></div>';
-  }
-  function RecentGroup(r) {
-    return '<div class="group" id="recentGroup"><h2>Recent chats <button data-go="#/chat/new" aria-label="New chat" title="New chat">' + icon("plus", "sm") + "</button></h2><ul>" +
-      NeoChat.history().slice(0, 6).map(function (c) { return '<li><a href="#/chat/' + c.id + '" class="' + (r.parts[0] === "chat" && String(NeoChat.active()) === String(c.id) ? "active" : "") + '"><span class="em">' + ({ inbox: "🧾", attention: "⚠️", dups: "🔍", gst: "🧾", generic: "💬" }[c.sc] || "💬") + '</span><span class="txt">' + esc(c.title) + "</span></a></li>"; }).join("") + "</ul></div>";
   }
   function TopNav() {
     return '<header class="topnav"><div class="brand"><button class="menu-btn tn-link" id="menuBtn" aria-label="Open Neo navigation">' + icon("menu") + '</button><a href="../inbox/" aria-label="AI Accountant home"><img src="../images/logo.png" alt="AI Accountant" width="121" height="24"></a></div>' +
@@ -244,24 +241,78 @@
   }
   function EmptyState(ic, h, p, cta) { return '<div class="card empty-state"><div class="ico">' + icon(ic) + "</div><h3>" + h + "</h3><p>" + p + "</p>" + cta + "</div>"; }
 
-  /* ---------- CHAT (shared Neo chat module, full view) ---------- */
-  var chatInst = null;
-  function Chat() { return '<div id="ncMount" style="display:flex;flex:1;min-height:0"></div>'; }
-  function afterChat(id, q) {
-    var host = document.getElementById("ncMount"); if (!host) return;
-    if (chatInst) { try { chatInst.stop(); } catch (e) {} }
-    var restore = id && id !== "new";
-    if (id === "new" && !q.q) NeoChat.setActive(null);
-    chatInst = NeoChat.mount(host, { mode: "full", restore: !!restore,
-      onHistory: function () { var g = document.getElementById("recentGroup"); if (g) g.outerHTML = RecentGroup(route()); },
-      onExpand: function () { var st = NeoChat.state(); st.open = true; try { sessionStorage.setItem("neoChat", JSON.stringify(st)); } catch (e) {} location.href = "../inbox/"; },
-      onClose: function () { go("#/"); } });
-    if (restore) { var n = +id; if (!isNaN(n)) chatInst.open(n); }
-    if (q.q) chatInst.start(q.q);
-    var want = NeoChat.active(); if (want != null && location.hash !== "#/chat/" + want && !q.q) history.replaceState(null, "", "#/chat/" + want);
+  /* ---------- CHAT ---------- */
+  function Chat(id, q) {
+    var c = id === "new" ? null : chat(id);
+    var hist = function (when) { return S.chats.filter(function (x) { return x.when === when; }).map(function (x) { return '<div class="hist-item ' + (c && c.id === x.id ? "active" : "") + '" data-open="' + x.id + '" role="button" tabindex="0">' + (x.pinned ? icon("pin", "pin") : "") + '<span class="em">' + x.em + '</span><span class="txt">' + esc(x.title) + '</span><button class="more" data-more="' + x.id + '" aria-label="Chat options">' + icon("more", "sm") + "</button></div>"; }).join(""); };
+    var history = '<aside class="history"><button class="new btn" data-go="#/chat/new">' + icon("plus") + "New chat</button>" +
+      ["Today", "Yesterday", "Last week"].map(function (w) { var h = hist(w); return h ? "<h3>" + w + "</h3>" + h : ""; }).join("") +
+      (S.chats.length ? "" : '<div class="empty-state"><h3>No conversations yet.</h3><p>Ask Neo to review your accounting work.</p></div>') + "</aside>";
+    var title = c ? c.title : "New chat";
+    var conv = '<section class="conv" aria-label="Conversation"><div class="head"><a class="btn ghost sm" href="#/" aria-label="Back to Neo home">' + icon("arrowL") + '</a><span class="pill ai">' + icon("sparkle") + 'Neo</span><h1 id="convTitle">' + esc(title) + '</h1><button class="btn ghost sm work-toggle" id="workToggle">' + icon("layers", "sm") + 'Work</button><a class="btn ghost sm" href="#/chat/new" aria-label="New chat">' + icon("plus") + "</a></div>" +
+      '<div class="thread" id="thread"><p class="disclaimer">Neo prepares the work and shows you exactly what will post. Nothing is approved or sent until you say so.</p></div>' +
+      Composer({ chat: c ? c.id : "new", placeholder: "Reply to Neo or ask something else…" }) + '<p class="foot-note">Neo can make mistakes. Review extracted details before approving.</p></section>';
+    var work = '<aside class="work' + (S.workSheet ? " sheet" : "") + '" id="work" aria-label="Work"><div class="wh"><h2>Work</h2><button class="btn ghost sm work-toggle" id="workClose" aria-label="Close work panel">' + icon("x", "sm") + '</button></div><div class="wb" id="workBody"><p class="empty">Neo\'s results and actions will appear here as it works.</p></div></aside>';
+    return '<div class="chat-frame">' + history + conv + work + "</div>";
   }
-  function ask(q) { go("#/chat/new?q=" + encodeURIComponent(q)); }
-  function titleFor(q) { return ["💬", q]; }
+  function afterChat(id, q) {
+    var c = id === "new" ? null : chat(id);
+    if (c) { if (!c.messages.length) { c.messages.push({ role: "user", text: seedPrompt(c) }); replay(c); } else { paint(c); } }
+    if (q.q) { setTimeout(function () { ask(q.q, "new"); }, 50); }
+    var ta = document.getElementById("prompt"); if (ta && !q.q) ta.focus();
+  }
+  function seedPrompt(c) { return { review: "Review all invoices uploaded today.", duplicates: "Find duplicate bills.", gst: "Check GST issues for September.", reconcile: "Reconcile unmatched bank transactions for July.", expenses: "Why did expenses increase this month?", ap: "Review pending AP bills due this week.", monthend: "What is still open for month-end closing?" }[c.script]; }
+  function paint(c) {
+    var t = document.getElementById("thread"); if (!t) return;
+    t.innerHTML = '<p class="disclaimer">Neo prepares the work and shows you exactly what will post. Nothing is approved or sent until you say so.</p>' + c.messages.map(Msg).join("");
+    t.scrollTop = t.scrollHeight;
+    var w = document.getElementById("workBody"); if (w) w.innerHTML = c.work ? WorkCard(c.work) : '<p class="empty">Neo\'s results and actions will appear here as it works.</p>';
+    var h = document.getElementById("convTitle"); if (h) h.textContent = c.title;
+  }
+  function Msg(m) {
+    if (m.role === "user") return '<div class="msg user">' + esc(m.text) + "</div>";
+    if (m.typing) return '<div class="msg neo"><span class="nmark">' + icon("sparkle", "sm") + '</span><div class="body"><span class="typing"><i></i><i></i><i></i></span></div></div>';
+    var body = "<p>" + esc(m.text) + "</p>";
+    if (m.result) body += ResultCard(m.result);
+    if (m.result) body += '<div class="feedback" aria-label="Was this helpful?"><button data-fb="up" aria-label="Helpful">' + icon("thumbU", "sm") + '</button><button data-fb="down" aria-label="Not helpful">' + icon("thumbD", "sm") + "</button></div>";
+    return '<div class="msg neo"><span class="nmark">' + icon("sparkle", "sm") + '</span><div class="body">' + body + "</div></div>";
+  }
+  function ResultCard(key) {
+    var r = RESULTS[key];
+    return '<div class="result"><div class="rh"><span>' + esc(r.title) + "</span>" + pill(r.status[0], r.status[1]) + '</div><div class="rb"><p style="margin-bottom:10px"><b>' + esc(r.sum) + '</b></p><div class="tally">' + r.tally.map(function (t) { return "<div>" + '<span class="n">' + t[1] + "</span>" + pill(t[0], t[2]) + "</div>"; }).join("") + "</div>" +
+      (r.why && S.explain ? '<div class="ai-box" style="margin-top:10px"><div class="lbl">' + icon("sparkle", "sm") + 'AI suggestion</div><div class="row" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span>Account for AWS-IN-88214: <b>' + r.why.account + "</b></span>" + conf(r.why.conf) + '</div><p style="margin-top:4px;color:var(--ink-2)">High confidence because this vendor has historically been coded to ' + r.why.account + '.</p><button class="why" data-why="' + key + '" aria-expanded="false">Why this suggestion? ' + icon("chevD", "sm") + '</button><ul id="why-' + key + '" hidden>' + r.why.lines.map(function (l) { return "<li>" + esc(l) + "</li>"; }).join("") + "</ul></div>" : "") +
+      '<div class="btn-row" style="margin-top:12px">' + r.actions.map(function (a) { return '<button class="btn sm ' + a[0] + '" data-act="' + esc(a[2]) + '">' + esc(a[1]) + "</button>"; }).join("") + "</div></div></div>";
+  }
+  function WorkCard(key) {
+    var r = RESULTS[key];
+    return '<div class="wcard"><div class="t"><b>' + esc(r.title) + "</b>" + pill(r.status[0], r.status[1]) + '</div><div class="b"><div class="row"><span>' + esc(r.sum) + "</span></div>" + r.tally.map(function (t) { return '<div class="row">' + pill(t[0], t[2]) + '<span class="n">' + t[1] + "</span></div>"; }).join("") + '<div class="progress" style="margin:4px 0"><i style="width:100%"></i></div>' + '<div class="btn-row">' + r.actions.map(function (a) { return '<button class="btn sm ' + a[0] + '" data-act="' + esc(a[2]) + '">' + esc(a[1]) + "</button>"; }).join("") + "</div></div></div>" +
+      '<div class="wcard"><div class="t"><b>Neo activity</b><span class="pill neutral">' + icon("clock") + 'Audit trail</span></div><div class="b"><ul class="timeline">' + [["ok", "Invoice uploaded", "4:32 PM"], ["ok", "Vendor matched: Amazon Web Services India", "4:33 PM"], ["ok", "GST verified", "4:33 PM"], ["ok", "Duplicate check completed", "4:33 PM"], ["ok", "Account suggested: Cloud Infrastructure", "4:34 PM"], ["user", S.approved ? "You approved 27 invoices" : "Waiting for your decision", S.approved ? "now" : ""]].map(TL).join("") + "</ul></div></div>";
+  }
+  function TL(x) { var ic = { ok: "check", run: "clock", warn: "alert", todo: "clock", user: "user" }[x[0]]; return '<li><span class="dot ' + x[0] + '">' + icon(ic) + "</span><span>" + esc(x[1]) + "</span><time>" + esc(x[2]) + "</time></li>"; }
+  function titleFor(q) { var k = pickScript(q); return { review: ["🧾", "Review invoices — 32 invoices"], duplicates: ["🔍", "Find duplicate bills — 3 found"], reconcile: ["🏦", "Bank reconciliation — 12 exceptions"], gst: ["🧾", "GST check — September"], ap: ["🧾", "Review AP — due this week"], monthend: ["📅", "Month-end closing — 3 open"], expenses: ["📊", "Explain increase in expenses"], attention: ["⚠️", "What needs my attention"], fallback: ["💬", q.length > 40 ? q.slice(0, 38) + "…" : q] }[k]; }
+  function ask(q, chatId) {
+    var c = chatId === "new" || !chatId ? null : chat(chatId);
+    if (!c) { var t = titleFor(q); c = { id: "c" + Date.now(), em: t[0], title: t[1], when: "Today", script: pickScript(q), messages: [], work: null }; S.chats.unshift(c); location.hash = "#/chat/" + c.id; }
+    c.messages.push({ role: "user", text: q }); if (c.messages.length > 2) c.script = pickScript(q);
+    replay(c);
+    if (location.hash !== "#/chat/" + c.id) location.hash = "#/chat/" + c.id;
+  }
+  function repaint(c) { if (PANEL.open && PANEL.chat === c) paintPanel(); if (route().parts[1] === c.id) paint(c); }
+  function replay(c) {
+    var sc = SCRIPTS[c.script] || SCRIPTS.fallback, i = 0;
+    var typing = { role: "neo", typing: true }; c.messages.push(typing); repaint(c);
+    function step() {
+      var s = sc.steps[i++]; if (!s) return;
+      setTimeout(function () {
+        var idx = c.messages.indexOf(typing); if (idx > -1) c.messages.splice(idx, 1);
+        c.messages.push({ role: "neo", text: s.say, result: s.result });
+        if (s.result) c.work = s.result;
+        if (sc.steps[i]) { c.messages.push(typing); }
+        repaint(c); step();
+      }, s.wait || 700);
+    }
+    step();
+  }
 
   /* ---------- ATTENTION / EXCEPTIONS ---------- */
   function Attention() {
@@ -400,7 +451,7 @@
 
   function focusComposer() { var p = document.getElementById("prompt"); if (p) { p.focus(); p.scrollIntoView({ block: "center" }); } else go("#/"); }
   /* ---------- Side panel module (not rendered inside the workspace; the v1 panel lives on the app pages) ---------- */
-  var PANEL = { open: false, chat: null, files: [] }; /* legacy, unused: the shared neo-chat.js module renders chat now */
+  var PANEL = { open: false, chat: null, files: [] };
   var PTASKS = [["Work the Inbox with me", "Read, check and prepare every new bill", "inbox", "Review all invoices uploaded today."], ["What needs my attention?", "Waiting, blocked and duplicate documents", "alert", "What needs my attention?"], ["Find duplicates", "Certain matches, with Delete or Keep", "copy", "Find duplicate bills."]];
   function openPanel(o) { PANEL.open = o; var p = document.getElementById("neoPanel"), t = document.getElementById("neoTab"), b = document.getElementById("askNeo"); if (!p) return; p.classList.toggle("open", o); p.setAttribute("aria-hidden", String(!o)); if (t) t.hidden = o; if (b) b.setAttribute("aria-pressed", String(o)); paintPanel(); if (o) { var ta = p.querySelector("textarea"); if (ta) ta.focus(); } }
   function paintPanel() {
@@ -438,7 +489,7 @@
       function sync() { send.disabled = !ta.value.trim() && !S.files.length; ta.style.height = "auto"; ta.style.height = Math.min(160, ta.scrollHeight) + "px"; }
       ta.addEventListener("input", sync); sync();
       ta.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
-      form.onsubmit = function (e) { e.preventDefault(); var q = ta.value.trim(); if (S.files.length) q = (q ? q + " " : "") + "(" + S.files.length + " file" + (S.files.length > 1 ? "s" : "") + " attached: " + S.files.map(function (f) { return f.name; }).join(", ") + ")"; if (!q) return; S.files = []; ta.value = ""; sync(); ask(q); };
+      form.onsubmit = function (e) { e.preventDefault(); var q = ta.value.trim(); if (S.files.length) q = (q ? q + " " : "") + "(" + S.files.length + " file" + (S.files.length > 1 ? "s" : "") + " attached: " + S.files.map(function (f) { return f.name; }).join(", ") + ")"; if (!q) return; S.files = []; ta.value = ""; sync(); ask(q, form.dataset.chat); };
       var fi = document.getElementById("fileIn"), chips = document.getElementById("chips");
       document.getElementById("attachBtn").onclick = function () { fi.value = ""; fi.click(); };
       fi.onchange = function () { Array.prototype.forEach.call(fi.files, function (f) { S.files.push({ name: f.name, size: f.size }); }); renderChips(); };
@@ -469,7 +520,7 @@
     if (t.closest("[data-pexpand]")) { openPanel(false); return; }
     var pa = t.closest("[data-pask]"); if (pa) { panelAsk(pa.dataset.pask); return; }
     var g = t.closest("[data-go]"); if (g) { go(g.dataset.go); return; }
-    var a = t.closest("[data-ask]"); if (a) { ask(a.dataset.ask); return; }
+    var a = t.closest("[data-ask]"); if (a) { ask(a.dataset.ask, "new"); return; }
     var ru = t.closest("[data-run]"); if (ru) { runAgent(ru.dataset.run); return; }
     var ts = t.closest("[data-toast]"); if (ts) { toast(ts.dataset.toast); return; }
     var w = t.closest("[data-why]"); if (w) { var ul = document.getElementById("why-" + w.dataset.why); if (ul) { ul.hidden = !ul.hidden; w.setAttribute("aria-expanded", String(!ul.hidden)); } return; }
